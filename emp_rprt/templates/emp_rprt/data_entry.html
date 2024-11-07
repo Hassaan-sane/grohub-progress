@@ -101,12 +101,12 @@
           {{ form.cp }}
         </div>
         <div class="form-group">
-          <label for="id_variant_quantity">Number of Variants</label>
-          {{ form.variant_quantity }}
+          <label for="id_quantity">Number of Variants</label>
+          {{ form.quantity }}
         </div>
         <div class="form-group">
-          <label for="id_variant_colors">Variant Values</label>
-          {{ form.variant_colors }}
+          <label for="id_details">Variant Values</label>
+          {{ form.details }}
         </div>
         <div class="form-group">
           <button type="submit">Save Product</button>
@@ -134,8 +134,8 @@
             <td>{{ product.sku }}</td>
             <td>{{ product.sp }}</td>
             <td>{{ product.cp }}</td>
-            <td>{{ product.variant_quantity }}</td>
-            <td>{{ product.variant_colors }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>{{ product.details }}</td>
             <td>
               <button class="edit-button" data-id="{{ product.id }}">
                 Edit
@@ -195,8 +195,8 @@
                   <td>${fields.sku}</td>
                   <td>${fields.sp}</td>
                   <td>${fields.cp}</td>
-                  <td>${fields.variant_quantity}</td>
-                  <td>${fields.variant_colors}</td>
+                  <td>${fields.quantity}</td>
+                  <td>${fields.details}</td>
                   <td><button class="edit-button" data-id="${product.pk}">Edit</button></td>
                 </tr>`
                 );
@@ -224,8 +224,8 @@
               $("#id_title").val(product.fields.title);
               $("#id_sp").val(product.fields.sp);
               $("#id_cp").val(product.fields.cp);
-              $("#id_variant_quantity").val(product.fields.variant_quantity);
-              $("#id_variant_colors").val(product.fields.variant_colors);
+              $("#id_quantity").val(product.fields.quantity);
+              $("#id_details").val(product.fields.details);
               $("#product_id").val(productId); // Set product ID for updating
             },
             error: function () {

@@ -40,6 +40,9 @@ WORKFLOW_STAGES = [
 # stage1.next_stages.add(stage2)  # Data Entry goes to Photgraphy
 # stage2.next_stages.add(stage3)  # Photgraphy goes to Editing
 # stage3.next_stages.add(stage4, stage5, stage6)
+def view_all_products(request):
+    products = Products.objects.all()  # Fetch all products
+    return render(request, 'emp_rprt/view_all_products.html', {'products': products})
 
 def product_progress_view(request):
     user = request.user  # Get the current logged-in user
@@ -414,8 +417,8 @@ def data_entry(request):
                         'title': product.title,
                         'sp': product.sp,
                         'cp': product.cp,
-                        'variant_quantity': product.variant_quantity,
-                        'variant_colors': product.variant_colors,
+                        'quantity': product.quantity,
+                        'details': product.details,
                     },
                 }
             }

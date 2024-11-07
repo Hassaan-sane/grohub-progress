@@ -39,12 +39,13 @@ class EmpUser(AbstractUser):
 
 # Products model to define products worked on
 class Products(models.Model):
-    title = models.CharField(max_length=100)
+    title = models.CharField(max_length=100, null=True, blank=True)
     sku = models.CharField(max_length=10, unique=True)
-    variant_quantity = models.IntegerField()
-    variant_colors = models.CharField(max_length=100)
+    quantity = models.IntegerField(default=0)
+    details = models.TextField(null=True, blank=True)
     sp = models.IntegerField()
     cp = models.IntegerField()
+    size = models.TextField(null=True, blank=True)
     date_added = models.DateField(auto_now_add=True)
     date_completed = models.DateField(null=True, blank=True)  # Optional completion date
 

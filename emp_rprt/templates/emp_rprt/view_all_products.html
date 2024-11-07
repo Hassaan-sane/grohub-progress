@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Dashboard</title>
+    <title>All Products</title>
     <style>
       /* Basic Reset */
       * {
@@ -119,67 +119,32 @@
   </head>
   <body>
     <div class="container">
-      <div>
-        <h1>Welcome to the Dashboard</h1>
-        <p>Hello, {{ user.username }}! You are logged in.</p>
-      </div>
-      <div style="text-align: center">
-        <a href="{% url 'data_entry' %}" class="button">Data Entry</a>
-        <a href="{% url 'view_all_products' %}" class="button">View All Products</a>
-
-      <form method="POST" action="{% url 'logout' %}">
-        {% csrf_token %}
-        <button type="submit">Logout</button>
-      </form></div>
-
-      <table>
+      <table id="productTable">
         <thead>
           <tr>
-            <th>Product SKU</th>
-            {% for work in allowed_work %}
-            <th>{{ work }}</th>
-            {% endfor %}
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Sale Price</th>
+            <th>Cost Price</th>
+            <th>Quantity</th>
+            <th>Variant Details</th>
+            <th>Sizes</th>
           </tr>
         </thead>
         <tbody>
-          {% for product_sku, progress_entries in progress_data.items %}
+          {% for product in products %}
           <tr>
-            <td><button class="open-button" data-id="{{ product.id }}">
-              {{ product_sku }}
-            </button></td>
-            {% for progress in progress_entries %} {% if progress %}
-            <td {% if progress.status == "not_started" %} style="background-color: red; color:white;" {% elif progress.status == "ongoing" %} style="background-color: orange; color:white;" {% elif progress.status == "completed" %} style="background-color: green; color:white;" {% endif %}>
-              {% if progress.status == "not_started" %}
-              <!--  -->
-              Not Started
-              <!--  -->
-              {% elif progress.status == "ongoing" %}
-              <!--  -->
-              Ongoing
-              <!--  -->
-              {% elif progress.status == "completed" %}
-              <!--  -->
-              Completed
-              <div style="color:rgb(0, 0, 0);" class="text-muted">Date Completed: {{ progress.date_last_changed }}</div>
-                
-              <!--  -->
-              {% endif %}
-              <div style="color:white;" class="text-muted">User: {{ progress.user.name }}</div>
-              
-              </td>
-            {% else %}
-            <td></td>
-            {% endif %} {% endfor %}
-          </tr>
-          {% empty %}
-          <tr>
-            <td colspan="{{ allowed_work|length|add:1 }}" class="no-data">
-              No progress data available.
-            </td>
+            <td>{{ product.title }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.sp }}</td>
+            <td>{{ product.cp }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>{{ product.details }}</td>
+            <td>{{ product.size }}</td>
           </tr>
           {% endfor %}
         </tbody>
       </table>
     </div>
-  </body>
+</body>
 </html>
