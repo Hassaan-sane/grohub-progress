@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>All Products</title>
+    <style>
+      /* Basic Reset */
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      /* Body Styles */
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f5f5f5;
+        padding: 20px;
+      }
+
+      /* Container */
+      .container {
+        max-width: 1000px;
+        margin: 0 auto;
+        background-color: #fff;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+      }
+
+      /* Header */
+      h1 {
+        color: #333;
+        text-align: center;
+        margin-bottom: 10px;
+      }
+
+      p {
+        text-align: center;
+        font-size: 1.1em;
+        color: #666;
+      }
+
+      /* Button */
+      .button,
+      button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s;
+      }
+
+      .button:hover,
+      button:hover {
+        background-color: #0056b3;
+      }
+
+      /* Logout Button */
+      form {
+        display: inline-block;
+        margin-top: 10px;
+        text-align: center;
+      }
+
+      /* Table */
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+
+      th,
+      td {
+        padding: 12px;
+        border: 1px solid #ddd;
+        text-align: center;
+      }
+
+      th {
+        background-color: #007bff;
+        color: #fff;
+        font-weight: bold;
+      }
+
+      td {
+        background-color: #f9f9f9;
+      }
+
+      tbody tr:hover {
+        background-color: #f1f1f1;
+      }
+
+      .no-data {
+        text-align: center;
+        color: #888;
+        font-style: italic;
+      }
+
+      /* Dropdown */
+      .dropdown {
+        padding: 8px;
+        border-radius: 4px;
+        border: 1px solid #ddd;
+        width: 100%;
+        background-color: #fff;
+        color: #333;
+      }
+
+      /* Muted Text */
+      .text-muted {
+        color: #888;
+        font-size: 0.9em;
+        margin-top: 5px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <table id="productTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Cost Price</th>
+            <th>Sale Price</th>
+            <th>Quantity</th>
+            <th>Variant Details</th>
+            <th>Sizes</th>
+          </tr>
+        </thead>
+        <tbody>
+            <td>{{ product.title }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.cp }}</td>
+            <td>{{ product.sp }}</td>
+            <td>{{ product.quantity }}</td>
+            <td>{{ product.details }}</td>
+            <td>{{ product.size }}</td>
+            </tr>
+        </tbody>
+      </table>
+    </div>
+</body>
+</html>

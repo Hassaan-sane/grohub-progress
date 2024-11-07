@@ -144,7 +144,7 @@
         <tbody>
           {% for product_sku, progress_entries in progress_data.items %}
           <tr>
-            <td><button class="open-button" data-id="{{ product.id }}">
+            <td><button class="open-button" data-id="{{ product.id }}" onclick="openProductPage('{{ product_sku }}')">
               {{ product_sku }}
             </button></td>
             {% for progress in progress_entries %} {% if progress %}
@@ -182,4 +182,7 @@
       </table>
     </div>
   </body>
+  <script>  function openProductPage(productSku) {
+    window.location.href = `/product/${productSku}/`;
+  }</script>
 </html>

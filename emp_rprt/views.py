@@ -40,6 +40,11 @@ WORKFLOW_STAGES = [
 # stage1.next_stages.add(stage2)  # Data Entry goes to Photgraphy
 # stage2.next_stages.add(stage3)  # Photgraphy goes to Editing
 # stage3.next_stages.add(stage4, stage5, stage6)
+
+def product_detail(request, sku):
+    product = get_object_or_404(Products, sku=sku)
+    return render(request, 'emp_rprt/single_product.html', {'product': product})
+
 def view_all_products(request):
     products = Products.objects.all()  # Fetch all products
     return render(request, 'emp_rprt/view_all_products.html', {'products': products})
