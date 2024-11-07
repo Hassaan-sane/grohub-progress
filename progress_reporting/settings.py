@@ -84,7 +84,7 @@ WSGI_APPLICATION = "progress_reporting.wsgi.application"
 # }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.mysql',
+        'ENGINE': 'django.db.backends.mariadb',
         'NAME': 'mydb',
         'USER': 'root',
         'PASSWORD': 'password',
@@ -92,6 +92,8 @@ DATABASES = {
         'PORT': '3306',
     }
 }
+
+
 
 # ALLOWED_HOSTS	progress.grohubsolutions.com	
 
