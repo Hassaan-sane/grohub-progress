@@ -49,7 +49,7 @@ class Products(models.Model):
     date_completed = models.DateField(null=True, blank=True)  # Optional completion date
 
     def __str__(self):
-        return self.sku
+        return  f"{self.sku} - {self.title}"
 
 # Progress model to track work progress on products
 class Progress(models.Model):
@@ -62,7 +62,7 @@ class Progress(models.Model):
     status = models.CharField(max_length=20, choices=[('not_started', 'Not Started'), ('ongoing', 'Ongoing'), ('completed', 'Completed')])
 
     def __str__(self):
-        return f"Progress on {self.product} by {self.user}"
+        return f"Progress on {self.product.sku} by {self.user} on stage {self.workflow_stage.title} status {self.status}"
 
     
 
@@ -83,4 +83,4 @@ class ProgressUpdated(models.Model):
     status_changed_to = models.CharField(max_length=20, choices=[('not_started', 'Not Started'), ('ongoing', 'Ongoing'), ('completed', 'Completed')])
 
     def __str__(self):
-        return f"{self.product.title}  - {self.status_changed_to}"
+        return f"{self.product.sku}  - {self.status_changed_to} by {self.user.name}"
