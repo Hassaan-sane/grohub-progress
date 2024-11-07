@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Add Product</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 20px;
+      }
+      h2,
+      h3 {
+        text-align: center;
+        color: #333;
+      }
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+      }
+      form {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 20px;
+      }
+      .form-group {
+        margin-bottom: 15px;
+      }
+      .form-group label {
+        font-weight: bold;
+        margin-bottom: 5px;
+        color: #666;
+      }
+      .form-group input {
+        padding: 10px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        width: 100%;
+        box-sizing: border-box;
+      }
+      button {
+        padding: 10px 15px;
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s;
+      }
+      button:hover {
+        background-color: #218838;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+      }
+      table,
+      th,
+      td {
+        border: 1px solid #ddd;
+      }
+      th,
+      td {
+        padding: 12px;
+        text-align: left;
+      }
+      th {
+        background-color: #f2f2f2;
+      }
+      tbody tr:hover {
+        background-color: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h2>Add or Edit Product</h2>
+      <form id="productForm" method="post" action="{% url 'data_entry' %}">
+        {% csrf_token %}
+        <div class="form-group">
+          <label for="id_sku">SKU</label>
+          {{ form.sku }}
+        </div>
+        <div class="form-group">
+          <label for="id_title">Product Name</label>
+          {{ form.title }}
+        </div>
+        <div class="form-group">
+          <label for="id_sp">SP</label>
+          {{ form.sp }}
+        </div>
+        <div class="form-group">
+          <label for="id_cp">CP</label>
+          {{ form.cp }}
+        </div>
+        <div class="form-group">
+          <label for="id_variant_quantity">Number of Variants</label>
+          {{ form.variant_quantity }}
+        </div>
+        <div class="form-group">
+          <label for="id_variant_colors">Variant Values</label>
+          {{ form.variant_colors }}
+        </div>
+        <div class="form-group">
+          <button type="submit">Save Product</button>
+        </div>
+        <input type="hidden" name="product_id" id="product_id" />
+      </form>
+
+      <h3>Product List</h3>
+      <table id="productTable">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>SKU</th>
+            <th>Sale Price</th>
+            <th>Cost Price</th>
+            <th>Variant Quantity</th>
+            <th>Variant Colors</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for product in products %}
+          <tr>
+            <td>{{ product.title }}</td>
+            <td>{{ product.sku }}</td>
+            <td>{{ product.sp }}</td>
+            <td>{{ product.cp }}</td>
+            <td>{{ product.variant_quantity }}</td>
+            <td>{{ product.variant_colors }}</td>
+            <td>
+              <button class="edit-button" data-id="{{ product.id }}">
+                Edit
+              </button>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      $(document).ready(function () {
+        // Handle form submission
+        $("#productForm").on("submit", function (e) {
+          e.preventDefault(); // Prevent normal form submission
+
+          const formData = $(this).serialize();
+          const actionUrl = $(this).attr("action");
+
+          $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: formData,
+            dataType: "json",
+            success: function (response) {
+              if (response.success) {
+                $("#productForm")[0].reset(); // Clear form
+                $("#product_id").val(""); // Reset hidden product_id field
+                loadProductTable(); // Refresh table
+              } else {
+                alert("Error: " + JSON.stringify(response.errors));
+              }
+            },
+            error: function () {
+              alert("An error occurred while saving the product.");
+            },
+          });
+        });
+
+        // Function to load the product table
+        function loadProductTable() {
+          $.ajax({
+            url: "{% url 'data_entry' %}",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+              const productTable = $("#productTable tbody");
+              productTable.empty();
+
+              data.products.forEach(function (product) {
+                const fields = product.fields;
+                console.log(fields);
+                productTable.append(
+                  `<tr>
+                  <td>${fields.title}</td>
+                  <td>${fields.sku}</td>
+                  <td>${fields.sp}</td>
+                  <td>${fields.cp}</td>
+                  <td>${fields.variant_quantity}</td>
+                  <td>${fields.variant_colors}</td>
+                  <td><button class="edit-button" data-id="${product.pk}">Edit</button></td>
+                </tr>`
+                );
+              });
+            },
+            error: function () {
+              console.error("Failed to load the product table.");
+            },
+          });
+        }
+
+        // Handle edit button click
+        $(document).on("click", ".edit-button", function () {
+          const productId = $(this).data("id");
+
+          $.ajax({
+            url: "{% url 'data_entry' %}",
+            type: "GET",
+            data: { id: productId },
+            dataType: "json",
+            success: function (data) {
+              const product = data.product;
+
+              $("#id_sku").val(product.fields.sku);
+              $("#id_title").val(product.fields.title);
+              $("#id_sp").val(product.fields.sp);
+              $("#id_cp").val(product.fields.cp);
+              $("#id_variant_quantity").val(product.fields.variant_quantity);
+              $("#id_variant_colors").val(product.fields.variant_colors);
+              $("#product_id").val(productId); // Set product ID for updating
+            },
+            error: function () {
+              console.error("Failed to load product data.");
+            },
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

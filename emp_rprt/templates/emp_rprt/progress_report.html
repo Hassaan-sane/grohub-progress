@@ -1,0 +1,228 @@
+{% load custom_filters %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Product Progress</title>
+    <style>
+      body {
+          font-family: Arial, sans-serif; /* Set a clean font */
+          background-color: #e2e2e2; /* Light background for the page */
+          margin: 0;
+          padding: 20px;
+      }
+
+      table {
+          width: 100%;
+          border-collapse: collapse; /* Remove space between cells */
+          border-radius: 10px; /* Rounded corners */
+          overflow: hidden; /* Hide overflow */
+          box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+      }
+
+      th, td {
+          font-family: Arial, sans-serif;
+          padding: 12px; /* Increased padding for better spacing */
+          text-align: left; /* Align text to the left */
+      }
+
+      th {
+          background-color: #007bff; /* Blue background for headers */
+          color: white; /* White text color */
+          font-weight: bold; /* Bold text */
+      }
+
+      tbody tr:nth-child(even) {
+          background-color: #f2f2f2; /* Light grey for even rows */
+      }
+
+      tbody tr:hover {
+          background-color: #e0e0e0; /* Highlight row on hover */
+      }
+
+      .dropdown {
+          width: 100%; /* Full width for the dropdown */
+          padding: 8px; /* Padding for dropdown */
+          border: 1px solid #ced4da; /* Border */
+          border-radius: 5px; /* Rounded corners */
+          appearance: none; /* Remove default dropdown arrow */
+          background-color: #fff; /* White background */
+          cursor: pointer; /* Pointer cursor for dropdown */
+      }
+
+      .no-data {
+          text-align: center; /* Center text for no data */
+          font-style: italic; /* Italic style for emphasis */
+      }
+      .btn-save, .logout-button {
+          margin-left: 10px; /* Add space between buttons */
+          padding: 10px 15px; /* Adjust padding for better appearance */
+          text-decoration: none; /* Remove underline from the link */
+          border: none; /* Remove border from button */
+          border-radius: 5px; /* Rounded corners */
+          cursor: pointer; /* Pointer cursor on hover */
+          transition: background-color 0.3s; /* Smooth transition */
+      }
+      .btn-save {
+          background-color: #4CAF50; /* Green background for save */
+          color: white; /* White text */
+      }
+      .btn-save:hover {
+          background-color: #218838; /* Darker green on hover */
+      }
+      .logout-form {
+          display: inline; /* Keeps the form inline with other elements */
+      }
+      .logout-button {
+          background-color: #ff4c4c; /* Red background for logout */
+          color: white; /* White text color */
+          padding: 10px 20px; /* Padding for the button */
+          border: none; /* No border */
+          border-radius: 5px; /* Rounded corners */
+          cursor: pointer; /* Pointer cursor on hover */
+          transition: background-color 0.3s; /* Transition for hover effect */
+      }
+
+      .logout-button:hover {
+          background-color: #ff1a1a; /* Darker red on hover */
+      }
+      .button-container {
+          display: flex; /* Use flexbox for layout */
+          justify-content: flex-end; /* Align items to the right */
+          align-items: center; /* Vertically center items */
+          margin: 20px; /* Add some margin if needed */
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1 class="text-center" >Product Progress</h1>
+      <div class="button-container">
+        <form method="POST" action="{% url 'logout' %}" class="logout-form">
+          {% csrf_token %}
+          <button type="submit" class="logout-button">Logout</button>
+        </form>
+      </div>
+      <table>
+        <thead>
+          <tr>
+            <th>Product SKU</th>
+            {% for work in allowed_work %}
+            <th>{{ work.work }}</th>
+            {% endfor %}
+          </tr>
+        </thead>
+        <tbody>
+          {% for product_sku, progress_entries in progress_data.items %}
+          <tr>
+            <td>{{ product_sku }}</td>
+            <!-- Display the product name from the first entry -->
+            {% for progress in progress_entries %}
+            {% if progress %}
+            <td>
+              <select class="dropdown" name="progress_status"
+                      data-product-id="{{ progress.product.id }}"
+                      data-progress-row="{{ progress.id }}"
+                      data-work-id="{{ progress.workflow_stage.id }}"
+                      onchange="updateStatus(this); changeColor(this);"
+                      {% if progress.status == "completed" %} disabled {% endif %}>
+                <option value="not_started" {% if progress.status == "not_started" %}selected{% endif %}>Not Started</option>
+                <option value="ongoing" {% if progress.status == "ongoing" %}selected{% endif %}>Ongoing</option>
+                <option value="completed" {% if progress.status == "completed" %}selected{% endif %}>Completed</option>
+              </select>
+              <div class="text-muted">User: {{ progress.user.name }}</div>
+            </td>
+            {% else %}
+            <td></td>
+            {% endif %}
+            {% endfor %}
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="{{ allowed_work|length|add:1 }}" class="no-data">No progress data available.</td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <script>
+      function updateStatus(selectElement) {
+        if (selectElement.value === "ongoing") {
+            selectElement.style.backgroundColor = 'orange';
+            selectElement.style.color = 'white';
+        } else if (selectElement.value === "completed") {
+            selectElement.style.backgroundColor = 'green';
+            selectElement.style.color = 'white';
+        }
+        else if (selectElement.value === "not_started") {
+            selectElement.style.backgroundColor = 'white';
+            selectElement.style.color = 'black';
+        }
+        const productId = selectElement.dataset.productId;
+        const progressRow = selectElement.dataset.progressRow;
+        const workId = selectElement.dataset.workId;
+        const status = selectElement.value;
+
+        console.log(productId, progressRow, workId, status);
+
+        if (status) {
+          fetch("/save-progress/", {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-CSRFToken": "{{ csrf_token }}",
+            },
+            body: JSON.stringify({
+              progress: progressRow,
+              product_id: productId,
+              work_id: workId,
+              status: status,
+            }),
+          })
+          .then(response => {
+            if (!response.ok) {
+              throw new Error("Network response was not ok");
+            }
+            return response.json();
+          })
+          .then(data => {
+            console.log("Success:", data);
+            if (status === "completed") {
+              selectElement.disabled = true;
+            }
+          })
+          .catch(error => {
+            console.error("Error:", error);
+          });
+        } else {
+          console.error("No status selected for progress ID:", progressId);
+        }
+      }
+      function changeColor(selectElement) {
+        const selectedValue = selectElement.value;
+
+        // Reset the background color for all cases
+        selectElement.style.backgroundColor = ""; 
+
+        // Change the background color based on the selected value
+        if (selectedValue === "not_started") {
+          selectElement.style.backgroundColor = "red"; // Color for Not Started
+          selectElement.style.color = "white"; // Change text color for visibility
+        } else if (selectedValue === "ongoing") {
+          selectElement.style.backgroundColor = "orange"; // Color for Ongoing
+          selectElement.style.color = "white"; // Change text color for visibility
+        } else if (selectedValue === "completed") {
+          selectElement.style.backgroundColor = "green"; // Color for Completed
+          selectElement.style.color = "white"; // Change text color for visibility
+        }
+      }
+      window.onload = function() {
+          const dropdowns = document.querySelectorAll('.dropdown');
+          dropdowns.forEach(dropdown => changeColor(dropdown));
+        };
+    </script>
+  </body>
+</html>
