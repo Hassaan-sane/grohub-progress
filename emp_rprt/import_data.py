@@ -1,6 +1,6 @@
 import pandas as pd
 from django.contrib.auth.models import User
-from emp_rprt.models import Products, Progress, WorkflowStage
+from emp_rprt.models import Products, Progress, WorkflowStage, ProgressUpdated
 import numpy as np
 
 # Path to the CSV file in the project root directory
@@ -12,12 +12,12 @@ df = pd.read_csv(csv_file_path)
 # Replace NaN values with defaults (for example, Quantity with 0)
 df.fillna({
     'SKU': 'Unknown SKU',         # Default SKU if missing
-    'Description': 'No Description',  # Default Description if missing
+    'Description': 'No Titles',  # Default Description if missing
     'CP': 0,                      # Default Cost Price
     'SP': 0,                      # Default Selling Price
-    'Color': 'Unknown Color',     # Default Color
+    'Color': 'N/A',     # Default Color
     'Quantity': 0,                # Default Quantity
-    'Size': 'Unknown Size',       # Default Size
+    'Size': 'N/A',       # Default Size
 }, inplace=True)
 
 # Iterate through the DataFrame and create model instances
@@ -38,18 +38,47 @@ for index, row in df.iterrows():
         product.save()
 
         # Get the initial workflow stage
-        workflow = WorkflowStage.objects.first()
+        # workflow = WorkflowStage.objects.first()
         
-        # Create progress entries
-        Progress.objects.create(
-            product=product,
-            workflow_stage=workflow,
-            status='completed',
-        )
-        Progress.objects.create(
-            product=product,
-            workflow_stage=workflow.next_stages.first(),
-            status='not_started',
-        )
+        # # Create progress entries
+        # Progress.objects.create(
+        #     product=product,
+        #     workflow_stage=workflow,
+        #     status='completed',
+        # )
+        # Progress.objects.create(
+        #     product=product,
+        #     workflow_stage=workflow.next_stages.first(),
+        #     status='not_started',
+        # )
+
+        workflow_first = WorkflowStage.objects.first()
+
+        if workflow_first:
+            Progress.objects.create(
+                    product = product,
+                    workflow_stage = workflow_first,
+                    status = 'completed',
+                )
+            ProgressUpdated.objects.create(
+                        product=product,
+                        workflow_stage=workflow_first,
+                        status_changed_to="completed",
+                    )
+
+
+            for stage in workflow_first.next_stages.all():
+                    # print(progress.workflow_stage.next_stages)
+                if stage:
+                    Progress.objects.create(
+                        product = product,
+                        workflow_stage = stage,
+                        status = 'not_started',
+                    )
+                    ProgressUpdated.objects.create(
+                        product=product,
+                        workflow_stage=stage,
+                        status_changed_to="not_started",
+                    )
 
 print("CSV data has been loaded into the Django database.")

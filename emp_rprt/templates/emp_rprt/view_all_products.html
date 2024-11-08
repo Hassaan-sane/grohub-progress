@@ -124,11 +124,16 @@
           <tr>
             <th>Name</th>
             <th>SKU</th>
-            <th>Cost Price</th>
+            {% if user.is_superuser %}
+                <th>Cost Price</th>
+            {% endif %}
             <th>Sale Price</th>
             <th>Quantity</th>
             <th>Variant Details</th>
             <th>Sizes</th>
+            {% if user.is_superuser %}
+                <th>Actions</th>
+            {% endif %}        
           </tr>
         </thead>
         <tbody>
@@ -136,11 +141,20 @@
           <tr>
             <td>{{ product.title }}</td>
             <td>{{ product.sku }}</td>
-            <td>{{ product.cp }}</td>
+            {% if user.is_superuser %}
+                <td>{{ product.cp }}</td>
+            {% endif %}
             <td>{{ product.sp }}</td>
             <td>{{ product.quantity }}</td>
             <td>{{ product.details }}</td>
             <td>{{ product.size }}</td>
+            {% if user.is_superuser %}
+            <td>
+              <button class="edit-button" data-id="{{ product.id }}">
+                Edit
+              </button>
+            </td>
+            {% endif %}
           </tr>
           {% endfor %}
         </tbody>

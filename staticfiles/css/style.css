@@ -16,3 +16,169 @@
   cursor: pointer;
   margin-right: 10px;
 }
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f4f4f4;
+  color: #333;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  margin: 0;
+}
+
+.container {
+  background: white;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  width: 300px;
+}
+
+.logo img {
+  display: block;
+  margin: 0 auto 20px auto; /* Center the logo */
+  width: 100px; /* Adjust the size of the logo */
+}
+
+h1 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.form-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.form input, .form select {
+  margin-bottom: 15px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.form input[type="submit"] {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.form input[type="submit"]:hover {
+  background-color: #45a049;
+}
+
+.toggle {
+  color: #4CAF50;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+.toggle:hover {
+  text-decoration: none;
+}
+
+.button,
+  button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: background-color 0.3s;
+  }
+  body {
+      font-family: Arial, sans-serif; /* Set a clean font */
+      background-color: #e2e2e2; /* Light background for the page */
+      margin: 0;
+      padding: 20px;
+  }
+
+  table {
+      width: 100%;
+      border-collapse: collapse; /* Remove space between cells */
+      border-radius: 10px; /* Rounded corners */
+      overflow: hidden; /* Hide overflow */
+      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  }
+
+  th, td {
+      font-family: Arial, sans-serif;
+      padding: 12px; /* Increased padding for better spacing */
+      text-align: left; /* Align text to the left */
+  }
+
+  th {
+      background-color: #007bff; /* Blue background for headers */
+      color: white; /* White text color */
+      font-weight: bold; /* Bold text */
+  }
+
+  tbody tr:nth-child(even) {
+      background-color: #f2f2f2; /* Light grey for even rows */
+  }
+
+  tbody tr:hover {
+      background-color: #e0e0e0; /* Highlight row on hover */
+  }
+
+  .dropdown {
+      width: 100%; /* Full width for the dropdown */
+      padding: 8px; /* Padding for dropdown */
+      border: 1px solid #ced4da; /* Border */
+      border-radius: 5px; /* Rounded corners */
+      appearance: none; /* Remove default dropdown arrow */
+      background-color: #fff; /* White background */
+      cursor: pointer; /* Pointer cursor for dropdown */
+  }
+
+  .no-data {
+      text-align: center; /* Center text for no data */
+      font-style: italic; /* Italic style for emphasis */
+  }
+  .btn-save, .logout-button {
+      margin-left: 10px; /* Add space between buttons */
+      padding: 10px 15px; /* Adjust padding for better appearance */
+      text-decoration: none; /* Remove underline from the link */
+      border: none; /* Remove border from button */
+      border-radius: 5px; /* Rounded corners */
+      cursor: pointer; /* Pointer cursor on hover */
+      transition: background-color 0.3s; /* Smooth transition */
+  }
+  .btn-save {
+      background-color: #4CAF50; /* Green background for save */
+      color: white; /* White text */
+  }
+  .btn-save:hover {
+      background-color: #218838; /* Darker green on hover */
+  }
+  .logout-form {
+      display: inline; /* Keeps the form inline with other elements */
+  }
+  .logout-button {
+      background-color: #ff4c4c; /* Red background for logout */
+      color: white; /* White text color */
+      padding: 10px 20px; /* Padding for the button */
+      border: none; /* No border */
+      border-radius: 5px; /* Rounded corners */
+      cursor: pointer; /* Pointer cursor on hover */
+      transition: background-color 0.3s; /* Transition for hover effect */
+  }
+
+  .logout-button:hover {
+      background-color: #ff1a1a; /* Darker red on hover */
+  }
+  .button-container {
+      display: flex; /* Use flexbox for layout */
+      justify-content: flex-end; /* Align items to the right */
+      align-items: center; /* Vertically center items */
+      margin: 20px; /* Add some margin if needed */
+  }

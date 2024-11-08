@@ -77,11 +77,11 @@ class UserDepartment(models.Model):
     
 class ProgressUpdated(models.Model):
     product = models.ForeignKey(Products, on_delete=models.CASCADE)
-    user = models.ForeignKey(EmpUser, on_delete=models.CASCADE)
+    user = models.ForeignKey(EmpUser, null=True, blank=True, on_delete=models.SET_NULL)
     work = models.ForeignKey(WorkDetail, on_delete=models.CASCADE, null=True, blank=True)
     workflow_stage = models.ForeignKey(WorkflowStage, on_delete=models.CASCADE, null=True, blank=True)
     date_changed = models.DateField(auto_now_add=True)  # Date when change occurred
     status_changed_to = models.CharField(max_length=20, choices=[('not_started', 'Not Started'), ('ongoing', 'Ongoing'), ('completed', 'Completed')])
 
     def __str__(self):
-        return f"{self.product.sku}  - {self.status_changed_to} by {self.user.name}"
+        return f"{self.product.sku}  - {self.status_changed_to}"

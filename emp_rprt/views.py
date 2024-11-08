@@ -42,20 +42,22 @@ WORKFLOW_STAGES = [
 # stage3.next_stages.add(stage4, stage5, stage6)
 
 def product_detail(request, sku):
+    user = request.user
     product = get_object_or_404(Products, sku=sku)
-    return render(request, 'emp_rprt/single_product.html', {'product': product})
+    return render(request, 'emp_rprt/single_product.html', {'product': product, 'user':user})
 
 def view_all_products(request):
-    products = Products.objects.all()  # Fetch all products
-    return render(request, 'emp_rprt/view_all_products.html', {'products': products})
+    user = request.user
+    products = Products.objects.all().order_by('sku')  # Fetch all products
+    return render(request, 'emp_rprt/view_all_products.html', {'products': products, 'user':user})
 
 def product_progress_view(request):
     user = request.user  # Get the current logged-in user
 
-    products = Products.objects.filter(date_completed__isnull=True)
+    products = Products.objects.filter(date_completed__isnull=True).order_by('sku')
     progress_data = {}
     # Get the work details the user is allowed to see based on UserDepartment
-    allowed_work = UserDepartment.objects.filter(user=user)
+    allowed_work = UserDepartment.objects.filter(user=user).order_by('work__order')
     
     for product in products:
         work_progress_list = []
@@ -66,10 +68,14 @@ def product_progress_view(request):
             # Fetch progress entries for the allowed work
             progress_entries = Progress.objects.filter(workflow_stage__title=aw.work, product = product).first()
             work_progress_list.append(progress_entries if progress_entries else None)
+        
+        if all(progress is not None and progress.status == "completed" for progress in work_progress_list):
+            continue
             
 
-
-        progress_data[product.sku] = work_progress_list
+        if any(work_progress_list):
+            progress_data[product.sku] = work_progress_list
+        # progress_data[product.sku] = work_progress_list
     
     # for product_id, work_progress_list in progress_data.items():
     #     print(f"Product ID: {product_id}")
@@ -161,7 +167,7 @@ def save_progress_view(request):
                             status_changed_to="not_started",
                         )
                         
-                if progress.workflow_stage.title == "Reels":
+                if progress.workflow_stage.order == 8:
                     product = Products.objects.get(sku = progress.product.sku)
                     product.date_completed = timezone.now().date()
                     product.save()
@@ -174,84 +180,25 @@ def save_progress_view(request):
 
     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
 
-# def save_progress(request):
-#     if request.method == 'POST':
-#         for key, value in request.POST.items():
-#             if key.startswith('progress_'):
-#                 progress_id = key.split('_')[1]  # Get the progress ID
-#                 new_status = value  # Get the new status from dropdown
-
-#                 # Update the existing progress entry
-#                 progress = Progress.objects.get(id=progress_id)
-#                 progress.status = new_status
-#                 progress.save()
-
-#                 # Check if the new status is 'completed'
-#                 if new_status == 'completed':
-#                     # Get the next stages for the current workflow stage
-#                     next_stages = progress.workflow_stage.next_stages.all()
-#                     for next_stage in next_stages:
-#                         Progress.objects.create(
-#                             work=progress.work,
-#                             product=progress.product,
-#                             user=progress.user,  # Optionally carry over user
-#                             department=progress.department,
-#                             workflow_stage=next_stage,
-#                             status='not_started',  # Set new tasks as 'not_started'
-#                         )
-
-#                 # Optionally log this update in the ProgressUpdated model
-#                 ProgressUpdated.objects.create(
-#                     product=progress.product,
-#                     user=request.user,
-#                     work=progress.work,
-#                     workflow_stage=progress.workflow_stage,
-#                     status_changed_to=new_status,
-#                 )
-
-#         return JsonResponse({'status': 'success'})
-
-#     return JsonResponse({'status': 'failed'}, status=400)
-
-def progress_table_view(request):
-    user = request.user
-    user_departments = UserDepartment.objects.filter(user=user).select_related('work')
-
-    # Prepare a set of Department titles for quick lookup
-    user_work_titles = set(user_departments.values_list('work__title', flat=True))
-
-    # Fetch progress data for the current user
-    progress_data = Progress.objects.filter(user=user).select_related('product', 'workflow_stage')
-    positions = Department.objects.all()
-
-    return render(request, 'emp_rprt/progress_table.html', {
-        'progress_data': progress_data,
-        'user_departments': user_departments,
-        'user_work_titles': user_work_titles,  # Pass the titles to the template
-        'positions': positions,
-        'csrf_token': request.META.get('CSRF_COOKIE'),  # Pass CSRF token for the JavaScript
-    })
-
-
 # def progress_table_view(request):
 #     user = request.user
 #     user_departments = UserDepartment.objects.filter(user=user).select_related('work')
-    
-#     # Prepare a set of Depatment titles for quick lookup
-#     user_work_titles = set(user_departments.values_list('work__title', flat=True))
-#     print(user_work_titles)
 
-#     progress_data = Progress.objects.filter(user=user)
+#     # Prepare a set of Department titles for quick lookup
+#     user_work_titles = set(user_departments.values_list('work__title', flat=True))
+
+#     # Fetch progress data for the current user
+#     progress_data = Progress.objects.filter(user=user).select_related('product', 'workflow_stage')
 #     positions = Department.objects.all()
-#     workList = WorkDetail.objects.all()  # Assuming you have a Work model
 
 #     return render(request, 'emp_rprt/progress_table.html', {
 #         'progress_data': progress_data,
 #         'user_departments': user_departments,
 #         'user_work_titles': user_work_titles,  # Pass the titles to the template
 #         'positions': positions,
-#         'workList': workList,
+#         'csrf_token': request.META.get('CSRF_COOKIE'),  # Pass CSRF token for the JavaScript
 #     })
+
 
 
 def login_signup_view(request):
@@ -339,7 +286,7 @@ def dashboard(request):
     products = Products.objects.all()#filter(date_completed__isnull=True)
     progress_data = {}
     # Get the work details the user is allowed to see based on UserDepartment
-    allowed_work = WorkflowStage.objects.all().distinct()
+    allowed_work = WorkflowStage.objects.all().distinct().order_by('order')
     
     for product in products:
         work_progress_list = []
@@ -347,12 +294,14 @@ def dashboard(request):
         for aw in allowed_work:
 
             progress_entries = Progress.objects.filter(workflow_stage__title=aw, product = product).first()
-            
             work_progress_list.append(progress_entries if progress_entries else None)
-
-
-            
+        
+        if all(progress is not None and progress.status == "completed" for progress in work_progress_list):
+            continue  # Skip this product as all progress entries are "completed"
+    
         progress_data[product.sku] = work_progress_list
+
+    sorted_progress_data = {k: v for k, v in sorted(progress_data.items(), key=lambda item: sum(1 for i in item[1] if i is not None), reverse=True)}
     
     # for product_id, work_progress_list in progress_data.items():
     #     print(f"Product ID: {product_id}")
@@ -366,7 +315,7 @@ def dashboard(request):
 
 
     return render(request, 'emp_rprt/dashboard.html', {
-        'progress_data': progress_data,
+        'progress_data': sorted_progress_data,
         'allowed_work':allowed_work
         })
     # return render(request, 'emp_rprt/dashboard.html')
@@ -385,20 +334,40 @@ def data_entry(request):
         
         if form.is_valid():
             product = form.save()
-            workflow = WorkflowStage.objects.first()
+            workflow_first = WorkflowStage.objects.first()
+
+            if workflow_first:
+                Progress.objects.create(
+                        product = product,
+                        user = request.user,
+                        workflow_stage = workflow_first,
+                        status = 'completed',
+                    )
+                ProgressUpdated.objects.create(
+                            product=product,
+                            user=request.user,
+                            workflow_stage=workflow_first,
+                            status_changed_to="completed",
+                        )
+
+
+                for stage in workflow_first.next_stages.all():
+                        # print(progress.workflow_stage.next_stages)
+                    if stage:
+                        Progress.objects.create(
+                            product = product,
+                            user = request.user,
+                            workflow_stage = stage,
+                            status = 'not_started',
+                        )
+                        ProgressUpdated.objects.create(
+                            product=product,
+                            user=request.user,
+                            workflow_stage=stage,
+                            status_changed_to="not_started",
+                        )
+        
             
-            Progress.objects.create(
-                product = product,
-                user = request.user,
-                workflow_stage = workflow,
-                status = 'completed',
-            )
-            Progress.objects.create(
-                product = product,
-                user = request.user,
-                workflow_stage = workflow.next_stages.first(),
-                status = 'not_started',
-            )
             # Save the product to the database
             return JsonResponse({'success': True, 'id': product.id})
         else:
@@ -424,18 +393,19 @@ def data_entry(request):
                         'cp': product.cp,
                         'quantity': product.quantity,
                         'details': product.details,
+                        'size':product.size
                     },
                 }
             }
             return JsonResponse(data)
         else:
-            products = Products.objects.all()
+            products = Products.objects.all().order_by("-sku")
             products_json = json.loads(serialize('json', products))
             return JsonResponse({'products': products_json}, safe=False)
 
     else:
         form = dataEntryForm()
-        products = Products.objects.all()
+        products = Products.objects.all().order_by("-sku")
         return render(request, 'emp_rprt/data_entry.html', {'form': form, 'products': products})
     # If it's a regular GET request, render the template with the form and products
     # products = Products.objects.all()
@@ -443,91 +413,8 @@ def data_entry(request):
     
     # # return render(request, 'emp_rprt/data_entry.html', {'form': form})
 
-def upload_excel(request):
-    if request.method == 'POST':
-        form = UploadFileForm(request.POST, request.FILES)
-        if form.is_valid():
-            excel_file = request.FILES['file']
-            workbook = openpyxl.load_workbook(excel_file)
-            worksheet = workbook.active
+def user_progress(request):
 
-            # Extract data from the Excel file
-            products = []
-            for row in worksheet.iter_rows(min_row=2, values_only=True):
-                sku, title, quantity = row
-                products.append({
-                    'sku': sku,
-                    'title': title,
-                    'quantity': quantity
-                })
+    users = EmpUser.objects.all()
 
-            # Return data as JSON response
-            return JsonResponse({'products': products})
-    return JsonResponse({'error': 'Invalid request'}, status=400)
-
-
-# def update_progress(request):
-#     if request.method == 'POST':
-#         data = json.loads(request.body)
-#         progress_id = data.get('progress_id')
-#         product_id = data.get('product_id')
-#         work_id = data.get('work_id')
-#         user_id = data.get('user_id')
-#         new_status = data.get('status')
-
-#         try:
-#             # Update the specific Progress entry
-#             progress = Progress.objects.get(id=progress_id, product_id=product_id, work_id=work_id, user_id=user_id)
-#             progress.status = new_status
-#             progress.save()
-
-#             # Add a new entry to the ProgressUpdated table
-#             ProgressUpdated.objects.create(
-#                 product_id=product_id,
-#                 user_id=user_id,
-#                 work_id=work_id,
-#                 status_changed_to=new_status,
-#                 date_changed=datetime.now()  # Current time of change
-#             )
-
-#             # If the new status is 'completed', update the next work in the workflow
-#             if new_status == 'completed':
-#                 current_work_index = WORKFLOW_STAGES.index(progress.work.title)
-#                 if current_work_index + 1 < len(WORKFLOW_STAGES):  # Check if there is a next work
-#                     next_work_title = WORKFLOW_STAGES[current_work_index + 1]
-                    
-#                     # Check if the next work already exists in Progress
-#                     next_progress = Progress.objects.filter(product_id=product_id, work__title=next_work_title, user_id=user_id).first()
-#                     if next_progress:
-#                         next_progress.status = 'not_started'
-#                         next_progress.save()
-#                     else:
-#                         # Optionally, create a new Progress entry for the next work
-#                                     # Update the specific Progress entry
-#                         progress = Progress.objects.get(id=progress_id, product_id=product_id, work_id=work_id, user_id=user_id)
-#                         progress.status = 'not_started'
-#                         progress.work = WorkDetail.objects.get(title=next_work_title)
-#                         progress.save()
-
-#                         # Add a new entry to the ProgressUpdated table
-#                         ProgressUpdated.objects.create(
-#                             product_id=product_id,
-#                             user_id=user_id,
-#                             work_id=progress.work.id,
-#                             status_changed_to="not_started",
-#                             date_changed=datetime.now()  # Current time of change
-#                         )
-#                         # Progress.objects.create(
-#                         #     product_id=product_id,
-#                         #     user_id=user_id,
-#                         #     work=WorkDetail.objects.get(title=next_work_title),  # Ensure you have the WorkDetail instance
-#                         #     status='ongoing'
-#                         # )
-
-#             return JsonResponse({'success': True})
-#         except Progress.DoesNotExist:
-#             return JsonResponse({'success': False, 'error': 'Progress not found'}, status=404)
-#         except Exception as e:
-#             return JsonResponse({'success': False, 'error': str(e)}, status=500)
-
-#     return JsonResponse({'success': False, 'error': 'Invalid request'}, status=400)
+    return render(request, "emp_rprt/user_progress.html", {"users":users})

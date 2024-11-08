@@ -28,10 +28,9 @@ urlpatterns = [
     path('login/', views.login_view, name='login'),
     path('dashboard/', views.dashboard, name='dashboard'),
     path('data-entry/', views.data_entry, name='data_entry'),
+    path('user-progress/', views.user_progress, name='user_progress'),
     path('view-all-products/', views.view_all_products, name='view_all_products'),
     path('product/<str:sku>/', views.product_detail, name='single_product'),
-
-    path('upload/', views.upload_excel, name='upload_excel'),
     path('logout/', views.logout_view, name='logout'),
     path('signup/', views.signup_view, name='signup'),
 ]

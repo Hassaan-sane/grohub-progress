@@ -11,7 +11,7 @@ class UploadFileForm(forms.Form):
 class dataEntryForm(forms.ModelForm):
     class Meta:
         model = Products
-        fields = ["title", "sku", "quantity", "details", "sp" ,"cp", ]
+        fields = ["title", "sku", "quantity", "details", "sp" ,"cp", "size"]
     # title = forms.CharField(label="title", max_length=100)
     # sku = forms.CharField(label='sku', max_length=7)
     # quantity = forms.IntegerField(label = 'quantity', min_value=0, max_value=1000)

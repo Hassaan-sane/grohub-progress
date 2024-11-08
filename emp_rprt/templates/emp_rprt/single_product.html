@@ -124,7 +124,9 @@
           <tr>
             <th>Name</th>
             <th>SKU</th>
-            <th>Cost Price</th>
+            {% if user.is_superuser %}
+                <th>Cost Price</th>
+            {% endif %}
             <th>Sale Price</th>
             <th>Quantity</th>
             <th>Variant Details</th>
@@ -134,7 +136,9 @@
         <tbody>
             <td>{{ product.title }}</td>
             <td>{{ product.sku }}</td>
-            <td>{{ product.cp }}</td>
+            {% if user.is_superuser %}
+                <td>{{ product.cp }}</td>
+            {% endif %}
             <td>{{ product.sp }}</td>
             <td>{{ product.quantity }}</td>
             <td>{{ product.details }}</td>

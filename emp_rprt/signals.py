@@ -10,14 +10,17 @@ def create_initial_entries(sender, **kwargs):
         if not WorkflowStage.objects.exists():
             # Create initial entries
             stage1 = WorkflowStage.objects.create(title='Data Entry', order=1)
-            stage4 = WorkflowStage.objects.create(title='Uploading', order=4)
             stage2 = WorkflowStage.objects.create(title='Photography', order=2)
-            stage3 = WorkflowStage.objects.create(title='Editing', order=3)
-            stage5 = WorkflowStage.objects.create(title='Reels', order=5)
-            stage6 = WorkflowStage.objects.create(title='Marketing', order=6)
+            stage3 = WorkflowStage.objects.create(title='Video', order=3)
+            stage4 = WorkflowStage.objects.create(title='Editing', order=4)
+            stage5 = WorkflowStage.objects.create(title='Uploading', order=5)
+            stage6 = WorkflowStage.objects.create(title='Reels', order=6)
+            stage7 = WorkflowStage.objects.create(title='Post', order=7)
+            stage8 = WorkflowStage.objects.create(title='Marketing', order=8)
 
             # Defining next stages
-            stage1.next_stages.add(stage2)  # Data Entry goes to Photgraphy
-            stage2.next_stages.add(stage3)  # Photgraphy goes to Editing
-            stage3.next_stages.add(stage4, stage5, stage6)
+            stage1.next_stages.add(stage2, stage3)  # Data Entry goes to Photgraphy and Video
+            stage3.next_stages.add(stage6) # video goes to reels
+            stage2.next_stages.add(stage4)  # Photgraphy goes to Editing
+            stage4.next_stages.add(stage5, stage7, stage8) # Editing goes to post uploading and marketing
             

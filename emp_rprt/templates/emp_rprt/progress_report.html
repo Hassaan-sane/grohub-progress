@@ -7,6 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Product Progress</title>
     <style>
+      .button,
+      button {
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        text-decoration: none;
+        transition: background-color 0.3s;
+      }
       body {
           font-family: Arial, sans-serif; /* Set a clean font */
           background-color: #e2e2e2; /* Light background for the page */
@@ -100,6 +111,7 @@
     <div class="container">
       <h1 class="text-center" >Product Progress</h1>
       <div class="button-container">
+        <div style="text-align: center"> <a href="{% url 'view_all_products' %}" class="button">View All Products</a></div>
         <form method="POST" action="{% url 'logout' %}" class="logout-form">
           {% csrf_token %}
           <button type="submit" class="logout-button">Logout</button>
@@ -117,7 +129,9 @@
         <tbody>
           {% for product_sku, progress_entries in progress_data.items %}
           <tr>
-            <td>{{ product_sku }}</td>
+            <td><button class="open-button" data-id="{{ product.id }}" onclick="openProductPage('{{ product_sku }}')">
+              {{ product_sku }}
+            </button></td>
             <!-- Display the product name from the first entry -->
             {% for progress in progress_entries %}
             {% if progress %}
@@ -223,6 +237,9 @@
           const dropdowns = document.querySelectorAll('.dropdown');
           dropdowns.forEach(dropdown => changeColor(dropdown));
         };
+      function openProductPage(productSku) {
+        window.location.href = `/product/${productSku}/`;
+      }
     </script>
   </body>
 </html>

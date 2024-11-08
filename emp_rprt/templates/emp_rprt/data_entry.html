@@ -32,17 +32,25 @@
       .form-group {
         margin-bottom: 15px;
       }
-      .form-group label {
-        font-weight: bold;
+      .form-inline {
+        display: flex;
+        gap: 20px; /* Adjust the space between the fields */
+      }
+      .form-inline .form-group {
+        flex: 1;
+      }
+      .form-inline label {
+        display: block;
         margin-bottom: 5px;
+        font-weight: bold;
         color: #666;
       }
-      .form-group input {
+      .form-inline input,
+      .form-inline select {
+        width: 100%;
         padding: 10px;
         border: 1px solid #ddd;
         border-radius: 4px;
-        width: 100%;
-        box-sizing: border-box;
       }
       button {
         padding: 10px 15px;
@@ -84,30 +92,43 @@
       <h2>Add or Edit Product</h2>
       <form id="productForm" method="post" action="{% url 'data_entry' %}">
         {% csrf_token %}
-        <div class="form-group">
-          <label for="id_sku">SKU</label>
-          {{ form.sku }}
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="id_sku">SKU</label>
+            {{ form.sku }}
+          </div>
+          <div class="form-group">
+            <label for="id_title">Product Name</label>
+            {{ form.title }}
+          </div>
         </div>
-        <div class="form-group">
-          <label for="id_title">Product Name</label>
-          {{ form.title }}
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="id_sp">SP</label>
+            {{ form.sp }}
+          </div>
+          <div class="form-group">
+            <label for="id_cp">CP</label>
+            {{ form.cp }}
+          </div>
+          <div class="form-group">
+            <label for="id_quantity">Quantity</label>
+            {{ form.quantity }}
+          </div>
         </div>
-        <div class="form-group">
-          <label for="id_sp">SP</label>
-          {{ form.sp }}
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="id_details">Details</label>
+            {{ form.details }}
+          </div>
+          <div class="form-group">
+            <label for="id_size">Sizes</label>
+            {{ form.size }}
+          </div>
         </div>
-        <div class="form-group">
-          <label for="id_cp">CP</label>
-          {{ form.cp }}
-        </div>
-        <div class="form-group">
-          <label for="id_quantity">Number of Variants</label>
-          {{ form.quantity }}
-        </div>
-        <div class="form-group">
-          <label for="id_details">Variant Values</label>
-          {{ form.details }}
-        </div>
+
         <div class="form-group">
           <button type="submit">Save Product</button>
         </div>
@@ -120,10 +141,11 @@
           <tr>
             <th>Name</th>
             <th>SKU</th>
-            <th>Sale Price</th>
             <th>Cost Price</th>
-            <th>Variant Quantity</th>
-            <th>Variant Colors</th>
+            <th>Sale Price</th>
+            <th>Quantity</th>
+            <th>Details</th>
+            <th>Sizes</th>
             <th>Actions</th>
           </tr>
         </thead>
@@ -132,10 +154,12 @@
           <tr>
             <td>{{ product.title }}</td>
             <td>{{ product.sku }}</td>
-            <td>{{ product.sp }}</td>
             <td>{{ product.cp }}</td>
+            <td>{{ product.sp }}</td>
             <td>{{ product.quantity }}</td>
             <td>{{ product.details }}</td>
+            <td>{{ product.size }}</td>
+            
             <td>
               <button class="edit-button" data-id="{{ product.id }}">
                 Edit
@@ -193,10 +217,11 @@
                   `<tr>
                   <td>${fields.title}</td>
                   <td>${fields.sku}</td>
-                  <td>${fields.sp}</td>
                   <td>${fields.cp}</td>
+                  <td>${fields.sp}</td>
                   <td>${fields.quantity}</td>
                   <td>${fields.details}</td>
+                  <td>${fields.size}</td>
                   <td><button class="edit-button" data-id="${product.pk}">Edit</button></td>
                 </tr>`
                 );
@@ -222,10 +247,11 @@
 
               $("#id_sku").val(product.fields.sku);
               $("#id_title").val(product.fields.title);
-              $("#id_sp").val(product.fields.sp);
               $("#id_cp").val(product.fields.cp);
+              $("#id_sp").val(product.fields.sp);
               $("#id_quantity").val(product.fields.quantity);
               $("#id_details").val(product.fields.details);
+              $("#id_size").val(product.fields.size);
               $("#product_id").val(productId); // Set product ID for updating
             },
             error: function () {
