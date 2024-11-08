@@ -4,7 +4,7 @@ from emp_rprt.models import Products, Progress, WorkflowStage, ProgressUpdated
 import numpy as np
 
 # Path to the CSV file in the project root directory
-csv_file_path = './data.csv'  # Replace with your CSV filename
+csv_file_path = './data2.csv'  # Replace with your CSV filename
 
 # Read CSV file into a DataFrame
 df = pd.read_csv(csv_file_path)
