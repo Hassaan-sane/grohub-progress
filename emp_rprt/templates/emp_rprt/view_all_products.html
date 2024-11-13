@@ -115,9 +115,59 @@
         font-size: 0.9em;
         margin-top: 5px;
       }
+      #productForm{
+        display:none;
+      }
+
     </style>
   </head>
   <body>
+    <div class="container">
+      <h2>Click Edit to Edit Product</h2>
+      <form id="productForm" method="post" action="{% url 'view_all_products' %}">
+        {% csrf_token %}
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="id_sku">SKU</label>
+            {{ form.sku }}
+          </div>
+          <div class="form-group">
+            <label for="id_title">Product Name</label>
+            {{ form.title }}
+          </div>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="id_sp">SP</label>
+            {{ form.sp }}
+          </div>
+          <div class="form-group">
+            <label for="id_cp">CP</label>
+            {{ form.cp }}
+          </div>
+          <div class="form-group">
+            <label for="id_quantity">Quantity</label>
+            {{ form.quantity }}
+          </div>
+        </div>
+
+        <div class="form-inline">
+          <div class="form-group">
+            <label for="id_details">Details</label>
+            {{ form.details }}
+          </div>
+          <div class="form-group">
+            <label for="id_size">Sizes</label>
+            {{ form.size }}
+          </div>
+        </div>
+
+        <div class="form-group">
+          <button type="submit">Save Product</button>
+        </div>
+        <input type="hidden" name="product_id" id="product_id" />
+      </form></div>
     <div class="container">
       <table id="productTable">
         <thead>
@@ -150,9 +200,9 @@
             <td>{{ product.size }}</td>
             {% if user.is_superuser %}
             <td>
-              <button class="edit-button" data-id="{{ product.id }}">
+              <!-- <button class="edit-button" data-id="{{ product.id }}">
                 Edit
-              </button>
+              </button> -->
             </td>
             {% endif %}
           </tr>
@@ -160,5 +210,101 @@
         </tbody>
       </table>
     </div>
+
+<script>
+         $(document).ready(function () {
+        // Handle form submission
+        $("#productForm").on("submit", function (e) {
+          e.preventDefault(); // Prevent normal form submission
+
+          const formData = $(this).serialize();
+          const actionUrl = $(this).attr("action");
+
+          $.ajax({
+            type: "POST",
+            url: actionUrl,
+            data: formData,
+            dataType: "json",
+            success: function (response) {
+              if (response.success) {
+                // Unhide the form for editing
+                $("#productForm").hide(); 
+                $("#productForm")[0].reset(); // Clear form
+                $("#product_id").val(""); // Reset hidden product_id field
+                loadProductTable(); // Refresh table
+              } else {
+                alert("Error: " + JSON.stringify(response.errors));
+              }
+            },
+            error: function () {
+              alert("An error occurred while saving the product.");
+            },
+          });
+        });
+      });
+        // Function to load the product table
+        function loadProductTable() {
+          $.ajax({
+            url: "{% url 'view_all_products' %}",
+            type: "GET",
+            dataType: "json",
+            success: function (data) {
+              const productTable = $("#productTable tbody");
+              productTable.empty();
+
+              data.products.forEach(function (product) {
+                const fields = product.fields;
+                console.log(fields);
+                productTable.append(
+                  `<tr>
+                  <td>${fields.title}</td>
+                  <td>${fields.sku}</td>
+                  <td>${fields.cp}</td>
+                  <td>${fields.sp}</td>
+                  <td>${fields.quantity}</td>
+                  <td>${fields.details}</td>
+                  <td>${fields.size}</td>
+                  <td><button class="edit-button" data-id="${product.pk}">Edit</button></td>
+                </tr>`
+                );
+              });
+            },
+            error: function () {
+              console.error("Failed to load the product table.");
+            },
+          });
+        }
+
+        // Handle edit button click
+        $(document).on("click", ".edit-button", function () {
+          const productId = $(this).data("id");
+
+          $.ajax({
+            url: "{% url 'view_all_products' %}",
+            type: "GET",
+            data: { id: productId },
+            dataType: "json",
+            success: function (data) {
+              const product = data.product;
+
+              $("#id_sku").val(product.fields.sku);
+              $("#id_title").val(product.fields.title);
+              $("#id_cp").val(product.fields.cp);
+              $("#id_sp").val(product.fields.sp);
+              $("#id_quantity").val(product.fields.quantity);
+              $("#id_details").val(product.fields.details);
+              $("#id_size").val(product.fields.size);
+              $("#product_id").val(productId); // Set product ID for updating
+
+                // Unhide the form for editing
+              $("#productForm").show(); 
+            },
+            error: function () {
+              console.error("Failed to load product data.");
+            },
+          });
+        });
+      
+</script>
 </body>
 </html>

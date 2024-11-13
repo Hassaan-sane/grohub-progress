@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth import login, logout
 from django.contrib.auth.models import User
-from .forms import UsernameLoginForm, dataEntryForm, UploadFileForm
+from .forms import UsernameLoginForm, dataEntryForm, UploadFileForm, UserDateSelectionForm
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
@@ -13,6 +13,9 @@ import openpyxl
 from django.core import serializers
 from django.core.serializers import serialize
 from django.utils import timezone
+from datetime import timedelta, date
+from django.db.models import Count
+from collections import defaultdict
 
 # Create your views here.
 from .models import EmpUser
@@ -48,8 +51,59 @@ def product_detail(request, sku):
 
 def view_all_products(request):
     user = request.user
-    products = Products.objects.all().order_by('sku')  # Fetch all products
-    return render(request, 'emp_rprt/view_all_products.html', {'products': products, 'user':user})
+    # products = Products.objects.all().order_by('sku')  # Fetch all products
+
+    if request.method == 'POST' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+         # Handle product addition or update logic
+        product_id = request.POST.get('product_id')  # Assuming you have a hidden input for product ID in your form
+        if product_id:
+            # Update existing product
+            product = get_object_or_404(Products, id=product_id)
+            form = dataEntryForm(request.POST, instance=product)
+        
+        if form.is_valid():
+            product = form.save()
+            
+            # Save the product to the database
+            return JsonResponse({'success': True, 'id': product.id})
+        else:
+            return JsonResponse({'success': False, 'errors': form.errors})
+        
+        # form.save()  # Save data to MySQL table
+        # return redirect('data_entry')  # Redirect to a list view after saving
+    
+    elif request.method == 'GET' and request.headers.get('x-requested-with') == 'XMLHttpRequest':
+        # Serialize the product data to JSON format for AJAX
+        
+        product_id = request.GET.get('id')
+        if product_id:
+            # Fetch product details for editing
+            product = get_object_or_404(Products, id=product_id)
+            data = {
+                'product': {
+                    'id': product.id,
+                    'fields': {
+                        'sku': product.sku,
+                        'title': product.title,
+                        'sp': product.sp,
+                        'cp': product.cp,
+                        'quantity': product.quantity,
+                        'details': product.details,
+                        'size':product.size
+                    },
+                }
+            }
+            return JsonResponse(data)
+        else:
+            products = Products.objects.all().order_by("-sku")
+            products_json = json.loads(serialize('json', products))
+            return JsonResponse({'products': products_json}, safe=False)
+
+    else:
+        form = dataEntryForm()
+        products = Products.objects.all().order_by("-sku")
+        # return render(request, 'emp_rprt/data_entry.html', {'form': form, 'products': products})
+        return render(request, 'emp_rprt/view_all_products.html', {'form': form, 'products': products, 'user':user})
 
 def product_progress_view(request):
     user = request.user  # Get the current logged-in user
@@ -414,7 +468,64 @@ def data_entry(request):
     # # return render(request, 'emp_rprt/data_entry.html', {'form': form})
 
 def user_progress(request):
+    # User selection
+    user_id = request.GET.get('user')
+    selected_user = EmpUser.objects.get(id=user_id) if user_id else None
 
-    users = EmpUser.objects.all()
+    # Date range selection
+    range_type = request.GET.get('range', 'today')
+    today = timezone.now().date()
 
-    return render(request, "emp_rprt/user_progress.html", {"users":users})
+    allowed_work = UserDepartment.objects.filter(user=selected_user).order_by('work__order')
+
+    
+    if range_type == 'today':
+        date_range = [today]
+    elif range_type == 'yesterday':
+        date_range = [today - timedelta(days=1)]
+    elif range_type == 'last_7_days':
+        date_range = [today - timedelta(days=i) for i in range(7)]
+    elif range_type == 'last_30_days':
+        date_range = [today - timedelta(days=i) for i in range(30)]
+    else:
+        date_range = [today - timedelta(days=1)]  # Default to yesterday
+    
+
+    # Process the data into a format suitable for the table
+    new_list = {}
+    # Ensure all dates are represented as rows, even if no data is available for that date
+    date_rows = date_range  # Dates to show as columns
+
+    for index, dr in enumerate(date_rows):
+        nested_list=[]
+        nested_list.append(dr)
+        for aw in allowed_work:
+            progress_data = Progress.objects.filter(
+                user=selected_user,
+                status="completed",
+                workflow_stage = aw.work,
+                date_last_changed__range=[dr, dr]
+            )
+            nested_list.append(progress_data.count() if progress_data else None)
+
+        new_list[index] = nested_list
+
+    # for index, object in new_list.items():
+    #     print(f"Product ID: {index}")
+    
+    #     for progress in enumerate(object, start=1):
+    #         if progress:
+    #             print(f"Progress Object - {progress}")
+    #         else:
+    #             print(f"No progress data available")
+
+    context = {
+        'date_rows': date_rows,
+        'selected_user': selected_user,
+        'users': EmpUser.objects.exclude(is_superuser=True),
+        "allowed_work": allowed_work,
+        "new_list":new_list
+    }
+
+    return render(request, "emp_rprt/user_progress.html", context)
+

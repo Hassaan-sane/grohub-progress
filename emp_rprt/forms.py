@@ -1,5 +1,5 @@
 from django import forms
-from .models import Products
+from .models import Products, EmpUser
 
 
 class UsernameLoginForm(forms.Form):
@@ -18,3 +18,20 @@ class dataEntryForm(forms.ModelForm):
     # sp = forms.IntegerField(label = 'sp', min_value=0, max_value=100000)
     # cp = forms.IntegerField(label = 'cp', min_value=0, max_value=100000)
     # details = forms.CharField(label='colors',max_length=100) 
+
+
+# Using Django's built-in user model
+
+
+class UserDateSelectionForm(forms.Form):
+    user = forms.ModelChoiceField(queryset=EmpUser.objects.filter(is_superuser=False), required=True)
+    date_range = forms.ChoiceField(
+        choices=[
+            ('1', 'Yesterday'),
+            ('7', 'Last 7 days'),
+            ('15', 'Last 15 days'),
+            ('30', 'Last 30 days'),
+        ],
+        required=True,
+        label="Select Date Range"
+    )
